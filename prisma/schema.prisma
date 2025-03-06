@@ -1,0 +1,618 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["typedSql"]
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                     String                  @id @default(uuid()) @db.Uuid
+  title                  String                  @map("title")
+  status                 String                  @default("ACTIVE")
+  names                  String[]                @map("names")
+  domains                String[]
+  knowledgeSources       String[]                @default([]) @map("knowledge_sources")
+  postGuidelines         Json?                   @map("post_guidelines")
+  logo                   String?
+  createdAt              DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt              DateTime?               @map("deleted_at") @db.Timestamptz(3)
+  isUnderAgency          Boolean                 @default(false) @map("is_under_agency")
+  about                  String?                 @map("about")
+  industryCategory       String?                 @map("industry_category")
+  subIndustryCategory    String?                 @map("sub_industry_category")
+  language               String?                 @map("language")
+  keyFeatures            String[]                @map("key_features")
+  toneOfVoice            String[]                @map("tone_of_voice")
+  values                 String[]                @map("values")
+  personality            String[]                @map("personality")
+  targetAudience         String[]                @map("target_audience")
+  accountSettings        AccountSettings?
+  competitors            Competitor[]
+  Page                   Page[]
+  prompts                Prompt[]
+  recommendations        Recommendation[]
+  scans                  Scan[]
+  tasks                  Task[]
+  topics                 Topic[]
+  trackedRecommendations TrackedRecommendation[]
+  UserAccount            UserAccount[]
+  AccountSubscription    AccountSubscription[]
+  FeatureRequest         FeatureRequest[]
+  post                   post[]
+  AsyncJob               AsyncJob[]
+  PromptResponse PromptResponse[]
+  ContentSource          ContentSource[]
+  EmbeddingChunk         EmbeddingChunk[]
+  tags                   Tag[]
+
+  @@map("accounts")
+}
+
+model AccountSettings {
+  id                        String   @id @default(uuid()) @db.Uuid
+  accountId                 String   @unique @map("account_id") @db.Uuid
+  scanPeriod                Int?     @map("scan_period")
+  aiEngines                 Json[]   @map("ai_engines")
+  regions                   String[] @map("regions")
+  competitorsNames          Json     @map("competitors_names")
+  suggestedCompetitorsNames Json?    @map("suggested_competitors_names")
+  pixelId                   String?  @map("pixel_id")
+  scanScheduleTime          String?  @map("scan_schedule_time")
+  createdAt                 DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                 DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  watchedOnboardVideo        DateTime? @map("watched_onboard_video")
+  promptLimit               Int?     @map("prompt_limit")
+  regionLimit               Int?     @map("region_limit")
+  membersLimit              Int?     @default(2) @map("members_limit")
+  scanIntervalLimit         Int?     @map("scan_interval_limit")
+  stripeCustomerId          String?  @unique @map("stripe_customer_id")
+  payingCustomer            String?  @map("paying_customer")
+  socialMediaProviderTokens Json?    @map("social_media_provider_tokens")
+  postCreationLimit         Int?     @map("post_creation_limit")
+  referralCode              String?  @map("referral_code")
+  whiteLabelLogoSmall       String?  @map("white_label_logo_small")
+  whiteLabelLogoBig         String?  @map("white_label_logo_big")
+  insightLimit              Int?     @default(0) @map("insight_limit")
+  generateWeeklyInsights    Boolean  @default(false) @map("generate_weekly_insights")
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@map("account_settings")
+}
+
+model Partners {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @map("name")
+  referralCode String   @unique @map("referral_code")
+  createdById  String   @map("created_by_id") @db.Uuid
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("partners")
+}
+
+model AccountSubscription {
+  id        String  @id @default(uuid()) @db.Uuid
+  accountId String  @map("account_id") @db.Uuid
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  createdBy            String @default("SYSTEM") @map("created_by")
+  stripeSubscriptionId String @unique @map("stripe_subscription_id")
+  stripePriceId        String @map("stripe_price_id")
+  status               String
+
+  trialStartDate DateTime? @map("trial_start_date")
+  trialEndDate   DateTime? @map("trial_end_date")
+  endDate        DateTime? @map("end_date")
+
+  cancelAt          DateTime? @map("cancel_at")
+  cancelAtPeriodEnd Boolean   @map("cancel_at_period_end")
+  canceledAt        DateTime? @map("canceled_at")
+
+  currentPeriodStart DateTime? @map("current_period_start")
+
+  quantity             Int
+  defaultPaymentMethod String? @map("default_payment_method")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([accountId])
+  @@map("account_subscriptions")
+}
+
+model User {
+  id            String        @id @default(uuid()) @db.Uuid
+  email         String        @unique
+  name          String?       @map("name")
+  lastName      String?       @map("last_name")
+  isSystemAdmin Boolean       @default(false) @map("is_system_admin")
+  isAgency      Boolean       @default(false) @map("is_agency")
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  userAccounts  UserAccount[]
+  Partners      Partners[]
+
+  @@map("users")
+}
+
+model UserAccount {
+  id        String     @id @default(uuid()) @db.Uuid
+  userId    String     @map("user_id") @db.Uuid
+  accountId String     @map("account_id") @db.Uuid
+  roles     String[]
+  lastInsightsVisit DateTime?  @map("last_insights_visit") @db.Timestamptz(3)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  account   Account    @relation(fields: [accountId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
+
+  @@unique([userId, accountId])
+  @@map("user_accounts")
+}
+
+model Prompt {
+  id          String      @id @default(uuid()) @db.Uuid
+  accountId   String      @map("account_id") @db.Uuid
+  prompt      String
+  type        String
+  ratingScore Int         @map("ratingscore")
+  meInPrompt  Boolean     @map("me_in_prompt")
+  topicId     String      @map("topic_id") @db.Uuid
+  regions     String[]
+  language    String?
+  isActive    Boolean     @default(true) @map("is_active")
+  generationId String?    @map("generation_id") @db.Uuid
+  avgVisibility Int       @default(0) @map("avg_visibility")
+  avgSentimentScore Int   @default(0) @map("avg_sentiment_score")
+  sentimentBreakdown Json? @map("sentiment_breakdown")
+  volume      Int         @default(-1)
+  tags        Json?       @map("tags")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt   DateTime?   @map("deleted_at") @db.Timestamptz(3)
+  account     Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  topic       Topic       @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  state       String      @default("ACTIVE")
+  recommendations Recommendation[]
+
+  @@index([accountId, isActive])
+  @@index([generationId])
+  @@map("prompts")
+}
+
+model Competitor {
+  id        String           @id @default(uuid()) @db.Uuid
+  accountId String           @map("account_id") @db.Uuid
+  name      String
+  logo      String?          @map("logo")
+  site      String?          @map("site")
+  advantage String?
+  status    String           @default("ACTIVE")
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  account   Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@map("competitors")
+}
+
+
+model Topic {
+  id        String   @id @default(uuid()) @db.Uuid
+  accountId String   @map("account_id") @db.Uuid
+  name      String
+  volume    Int      @default(-1) @map("volume")
+  priority  Int
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  prompts   Prompt[]
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  state String      @default("ACTIVE")
+
+  @@index([accountId])
+  @@map("topics")
+}
+
+model Region {
+  name      String   @id @unique
+  country   String
+  state     String?
+  city      String?
+  locale    String
+  isActive  Boolean  @default(true) @map("is_active")
+  proxyUrls String[] @map("proxy_urls")
+  Task      Task[]
+
+  @@map("regions")
+}
+
+model Task {
+  id               String     @id @default(uuid()) @db.Uuid
+  task_index       Int?
+  runId            String     @map("run_id") @db.Uuid
+  status           String
+  totalTasks       Int?       @map("total_tasks")
+  accountId        String     @map("account_id") @db.Uuid
+  provider         String
+  totalPrompts     Int?       @map("total_prompts")
+  promptsSucceeded Int?       @map("prompts_succeeded") @default(0)
+  promptsFailed    Int?       @map("prompts_failed") @default(0)
+  regionName       String     @map("region_name")
+  promptIds        String[]   @map("prompt_ids")
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  account          Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  region           Region     @relation(fields: [regionName], references: [name])
+  run              Scan       @relation(fields: [runId], references: [id])
+
+  @@index([accountId])
+  @@map("tasks")
+}
+
+model Results {
+  id                String   @id @default(uuid()) @db.Uuid
+  accountId         String   @map("account_id") @db.Uuid
+  topicId           String   @map("topic_id") @db.Uuid
+  topic             String
+  promptId          String   @map("prompt_id") @db.Uuid
+  prompt            String
+  isCompanyInPrompt Boolean  @map("is_company_in_prompt")
+  promptType        String   @map("prompt_type")
+  promptRanking     Int      @map("prompt_ranking")
+  rank              Int
+  entity            String
+  originalEntity    String   @map("original_entity")
+  reason            String?
+  linkable          Boolean
+  companySources    Json[]   @map("company_sources")
+  companySiteUrl    String?  @map("company_site_url")
+  feel              String?  @map("feel")
+  urlSources        Json[]   @map("url_sources")
+  provider          String
+  model             String
+  timestamp         DateTime @map("timestamp") @db.Timestamptz(3)
+  scanId            String   @map("scan_id") @db.Uuid
+  region            String   @map("region")
+  country           String
+  state             String?
+  city              String?
+
+  @@index([entity])
+  @@index([topicId])
+  @@index([provider])
+  @@index([promptType])
+  @@index([timestamp])
+  @@index([accountId, scanId], map: "results_account_id_run_id_idx")
+  @@index([accountId, entity], map: "results_account_id_entity_idx")
+  @@index([isCompanyInPrompt], map: "results_is_prompt_branded_idx")
+  @@index([region], map: "results_region_name_idx")
+  @@map("results")
+}
+
+model PromptResponse {
+  id           String   @id @default(uuid()) @db.Uuid
+  accountId    String   @map("account_id") @db.Uuid
+  taskId       String?   @map("task_id") @db.Uuid
+  topicId      String?   @map("topic_id") @db.Uuid
+  promptId     String?   @map("prompt_id") @db.Uuid
+  scanId       String?   @map("scan_id") @db.Uuid
+
+  purpose      String   @default("LLM_SCAN") @map("purpose")
+  response     String?   @map("response")
+  jsonResponse Json?    @map("json_response")
+  sources      Json[]   @map("sources")
+  model        String
+  timestamp    DateTime @map("timestamp") @db.Timestamptz(3)
+  region       String?   @map("region")
+  country      String?
+  state        String?
+  city         String?
+  usage        Json?    @map("usage")
+  brightdataJobId String? @map("brightdata_job_id")
+  s3Key        String? @map("s3_key")
+  failedReason String? @map("failed_reason")
+  status       String               @default("COMPLETED") @map("status")
+  provider     String
+
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([timestamp])
+  @@index([accountId, promptId], map: "prompt_responses_account_id_prompt_id_idx")
+  @@map("prompt_responses")
+}
+
+model Recommendation {
+  id                     String                  @id @default(uuid()) @db.Uuid
+  accountId              String                  @map("account_id") @db.Uuid
+  promptId               String?                 @map("prompt_id") @db.Uuid
+  batchId                String?                 @map("batch_id") @db.Uuid
+  type                   String
+  effectiveness          String
+  targetKeywords         String[]                @map("target_keywords")
+  insight                String
+  isActive               Boolean                 @default(true) @map("is_active")
+  createdAt              DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt              DateTime?               @map("deleted_at") @db.Timestamptz(3)
+  title                  String
+  description            String
+  publishedAt            DateTime?               @map("published_at") @db.Timestamptz(3)
+  topic                  String?
+  easyToDo               Boolean                 @default(false) @map("easy_to_do")
+  trackable              Boolean                 @default(true)
+  dueWeek                DateTime?               @map("due_week") @db.Timestamptz(3)
+  status                 String                  @default("TO_DO") @map("status")
+  account                Account                 @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  prompt                 Prompt?                 @relation(fields: [promptId], references: [id], onDelete: SetNull)
+  posts                  post[]
+  trackedRecommendations TrackedRecommendation[]
+
+  @@index([accountId])
+  @@index([promptId])
+  @@index([batchId])
+  @@map("recommendations")
+}
+
+model TrackedRecommendation {
+  id               String         @id @default(uuid()) @db.Uuid
+  recommendationId String?        @map("recommendation_id") @db.Uuid
+  accountId        String         @map("account_id") @db.Uuid
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  urls             String[]       @map("urls")
+  account          Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  recommendation   Recommendation? @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@map("tracked_recommendations")
+}
+
+model Scan {
+  id                 String     @id(map: "runs_pkey") @db.Uuid
+  accountId          String     @map("account_id") @db.Uuid
+  scheduledBy        String     @map("scheduled_by")
+  scheduledAt        DateTime   @default(now()) @map("scheduled_at") @db.Timestamptz(3)
+  groupedCompetitors Boolean    @default(false) @map("grouped_competitors")
+  createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime   @map("updated_at") @db.Timestamptz(3)
+  status             String?
+  accounts           Account    @relation(fields: [accountId], references: [id], onDelete: Cascade, map: "runs_account_id_fkey")
+  tasks              Task[]
+
+  @@index([accountId], map: "runs_account_id_idx")
+  @@map("scans")
+}
+
+model Page {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId          String   @map("account_id") @db.Uuid
+  domain             String
+  title              String
+  relative_url_regex String
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  account            Account  @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_pages_account")
+
+  @@index([accountId], map: "idx_pages_account_id")
+  @@map("pages")
+}
+
+model AiSetting {
+  id           String   @id @default(uuid()) @db.Uuid
+  provider     String
+  model        String
+  usedStep     String   @unique(map: "ai_settings_used_step_key") @map("used_step")
+  inputMessage String?  @map("input_message")
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([usedStep])
+  @@map("ai_settings")
+}
+
+model post {
+  id                          String              @id @default(uuid()) @map("id") @db.Uuid
+  generationId                String              @map("generation_id") @db.Uuid
+  accountId                   String              @map("account_id") @db.Uuid
+  topic                       String              @map("topic")
+  prompt                      String              @map("prompt")
+  socialMediaProvider         String             @map("social_media_provider")
+  title                       String              @map("title")
+  body                        String              @map("body")
+  tags                        String[]            @map("tags")
+  focusKeyphrase              String?             @map("focus_keyphrase")
+  slug                        String?             @map("slug")
+  metaDescription             String?             @map("meta_description")
+  readTime                    Int?                @map("read_time")
+  imagesUrl                   String[]            @map("images_url")
+  youtubeUrl                  String?             @map("youtube_url")
+  visitSite                   String?             @map("visit_site")
+  state                       String              @default("SUGGESTED") @map("state")
+  aiModel                     String              @map("ai_model")
+  aiProvider                  String              @map("ai_provider")
+  aiStyle                     String?             @map("ai_style")
+  postIdInSocialMediaProvider String?             @map("post_id_in_social_media_provider")
+  unsplashPhotoId             String?             @map("unsplash_photo_id")
+  unsplashPhotographerName    String?             @map("unsplash_photographer_name")
+  unsplashPhotographerUsername String?            @map("unsplash_photographer_username")
+  unsplashDownloadLocation    String?             @map("unsplash_download_location")
+  publishedUrl                String?             @map("published_url")
+
+  publishAt   DateTime? @map("publish_at") @db.Timestamptz(3)
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(3)
+  recommendationId String? @map("recommendation_id") @db.Uuid
+
+  appearancesCount Int       @default(0) @map("appearances_count")
+  visibilityScore  Float     @default(0) @map("visibility_score")
+  firstSeenAt      DateTime? @map("first_seen_at") @db.Timestamptz(3)
+  lastSeenAt       DateTime? @map("last_seen_at") @db.Timestamptz(3)
+  schemasIncluded  String[]  @default([]) @map("schemas_included")
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  recommendation Recommendation? @relation(fields: [recommendationId], references: [id])
+  postChunkUsages PostChunkUsage[]
+
+  @@index([accountId])
+  @@index([recommendationId])
+  @@map("posts")
+}
+
+model FeatureRequest {
+  id          String               @id @default(uuid()) @map("id")
+  featureName String               @map("feature_name")
+  description String               @map("description")
+  urgency     String               @map("urgency")
+  status      String               @default("PENDING") @map("status")
+  accountId   String               @map("account_id") @db.Uuid
+  account     Account              @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("feature_requests")
+}
+
+model AsyncJob {
+  id          String         @id @default(uuid()) @db.Uuid
+  accountId   String         @map("account_id") @db.Uuid
+  account     Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  type        String         @map("type")
+  data        Json
+  submittedBy String         @map("submitted_by")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  status      String         @default("PENDING") @map("status")
+  error       String?        @map("error")
+
+  @@map("async_jobs")
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  trackerVersion    String   @map("tracker_version") @default("v")
+  accountId  String   @map("account_id")
+  timestamp  DateTime @map("timestamp") @db.Timestamptz(3)
+  url        String
+  path       String
+  referrer   String?
+  userAgent  String   @map("user_agent")
+  source     String   @map("source")
+  botName    String?  @map("bot_name")
+  browser    String?
+  os         String?
+  device     String?
+  screen     String?
+  platform   String?
+  language   String?
+  country    String?
+  city       String?
+  region     String?
+  ip         String?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([accountId])
+  @@index([timestamp])
+  @@index([source])
+  @@index([botName])
+  @@index([country])
+  @@map("analytics_events")
+}
+
+model ContentSource {
+  id              String           @id @default(uuid()) @db.Uuid
+  accountId       String           @map("account_id") @db.Uuid
+  sourceType      String           @map("source_type")
+  originalTable   String?          @map("original_table")
+  originalId      String?          @map("original_id")
+  language        String?
+  title           String?
+  url             String?
+  isUserProvided  Boolean          @default(false) @map("is_user_provided")
+  authorityScore  Float            @default(0.8) @map("authority_score")
+  ingestionStatus String?          @map("ingestion_status")
+  lastIngestedAt  DateTime?        @map("last_ingested_at") @db.Timestamptz(3)
+  ingestionError  String?          @map("ingestion_error")
+  chunksIngested  Int              @default(0) @map("chunks_ingested")
+  metadata        Json?            @map("metadata")
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  account         Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  chunks          EmbeddingChunk[]
+
+  @@index([accountId, sourceType])
+  @@index([accountId, ingestionStatus])
+  @@map("content_sources")
+}
+
+model EmbeddingChunk {
+  id              String                       @id @default(uuid()) @db.Uuid
+  accountId       String                       @map("account_id") @db.Uuid
+  contentSourceId String                       @map("content_source_id") @db.Uuid
+  sourceType      String                       @map("source_type")
+  chunkIndex      Int                          @map("chunk_index")
+  text            String
+  language        String?
+  embedding       Unsupported("vector(1536)")?
+  score           Float                        @default(0)
+  authorityScore  Float                        @default(0.8) @map("authority_score")
+  isActive        Boolean                      @default(true) @map("is_active")
+  usageCount      Int                          @default(0) @map("usage_count")
+  createdAt       DateTime                     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  account         Account                      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  contentSource   ContentSource                @relation(fields: [contentSourceId], references: [id], onDelete: Cascade)
+  postUsages      PostChunkUsage[]
+
+  @@index([accountId, sourceType])
+  @@index([contentSourceId])
+  @@index([accountId, isActive])
+  @@map("embedding_chunks")
+}
+
+model PostChunkUsage {
+  id        String         @id @default(uuid()) @db.Uuid
+  postId    String         @map("post_id") @db.Uuid
+  chunkId   String         @map("chunk_id") @db.Uuid
+  role      String
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  post      post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  chunk     EmbeddingChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([chunkId])
+  @@map("post_chunk_usage")
+}
+
+model Tag {
+  id        String     @id @default(uuid()) @db.Uuid
+  accountId String     @map("account_id") @db.Uuid
+  name      String
+  colorRow  String     @map("color_row")
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt DateTime?  @map("deleted_at") @db.Timestamptz(3)
+  account   Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, name])
+  @@index([accountId])
+  @@index([accountId, deletedAt])
+  @@map("tags")
+}

@@ -1,0 +1,100 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# NestJS Best Practices
+
+## Architecture & Design
+
+**Use module-based architecture with clear boundaries.** Organize code into feature modules with well-defined interfaces to improve maintainability and testability.
+
+**Implement lazy module loading for optional features.** Only loads modules when needed, reducing startup time and memory usage for better performance.
+
+**Design stateless services with pure functions.** Services should not rely on instance state between requests for better scalability and reliability.
+
+**Prefer dependency injection over static imports.** Enables better testability, modularity, and allows for easier service mocking and replacement.
+
+**Use barrel exports for clean module interfaces.** Export public APIs through index files to maintain clear module boundaries and easier refactoring.
+
+## Validation & Data Handling
+
+**Use Zod with `nestjs-zod` for type-safe validation.** Provides runtime validation with compile-time type inference, reducing bugs and improving developer experience.
+
+**Apply `ZodValidationPipe` globally for consistent validation.** Use `APP_PIPE` provider to ensure all incoming requests are validated uniformly.
+
+**Create DTOs with `createZodDto` for request/response typing.** Combines Zod schema validation with NestJS decorators for comprehensive type safety.
+
+**Implement custom validation exception handling.** Use `createZodValidationPipe` with custom exception factories for consistent error responses.
+
+**Use `ZodSerializerInterceptor` for output validation.** Ensures response data matches expected schemas and prevents data leaks.
+
+## Performance Optimization
+
+**Enable configuration caching with `ConfigModule.forRoot({ cache: true })`.** Reduces repeated environment variable parsing overhead during execution.
+
+**Use connection pooling for database connections.** Configure appropriate pool sizes and timeouts to optimize resource usage and prevent connection exhaustion.
+
+**Implement proper caching strategies.** Use `@nestjs/cache-manager` for application-level caching of expensive operations and frequently accessed data.
+
+**Bundle dependencies appropriately for deployment.** Optimize bundle size while maintaining functionality for faster startup and reduced resource usage.
+
+## Security & Authentication
+
+**Validate all inputs using Zod schemas.** Apply validation at controller level using `@UsePipes(ZodValidationPipe)` for request body, query, and params.
+
+**Implement proper authentication guards.** Use JWT-based authentication with proper token validation and refresh mechanisms.
+
+**Apply rate limiting with appropriate storage.** Use external storage like Redis for rate limiting state to work across multiple application instances.
+
+**Sanitize outputs with `@ZodSerializerDto`.** Ensure responses only include intended fields and prevent sensitive data exposure.
+
+## Error Handling & Logging
+
+**Use structured logging with request context.** Include correlation IDs, user context, and operation metadata for effective debugging and monitoring.
+
+**Implement global exception filters.** Create centralized error handling with proper HTTP status codes and consistent error response formats.
+
+**Handle Zod validation errors appropriately.** Use `ZodValidationExceptionFilter` to catch and format validation errors consistently.
+
+**Log performance metrics and slow operations.** Monitor execution times and database query performance to identify bottlenecks.
+
+## Database & External Services
+
+**Use TypeScript-first ORM approaches.** Prefer ORMs like Prisma or Drizzle that provide excellent TypeScript integration and type safety.
+
+**Implement proper connection management.** Use connection pooling with appropriate limits and timeouts for database and external service connections.
+
+**Apply circuit breaker patterns for external APIs.** Prevent cascading failures and improve resilience when dependent services are unavailable.
+
+**Use async/await consistently with proper error handling.** Ensures proper resource cleanup and prevents memory leaks in async operations.
+
+## Testing & Quality
+
+**Write unit tests for all services and controllers.** Use Jest with proper mocking of dependencies to ensure code reliability and prevent regressions.
+
+**Implement integration tests for critical flows.** Test complete request/response cycles including database interactions and external service calls.
+
+**Use Zod schemas for test data generation.** Leverage schema definitions to create consistent test fixtures and ensure test data validity.
+
+**Apply code coverage thresholds.** Maintain high test coverage to catch issues early and improve code quality.
+
+## Configuration & Environment
+
+**Validate environment variables with Zod at startup.** Use configuration validation to fail fast on missing or invalid environment variables.
+
+**Use strongly-typed configuration services.** Create typed configuration objects instead of accessing `process.env` directly throughout the application.
+
+**Implement environment-specific configurations.** Use different configuration files or validation schemas for development, staging, and production.
+
+**Centralize feature flags and toggles.** Use configuration service to manage feature flags and conditional functionality.
+
+## API Design & Documentation
+
+**Design consistent RESTful APIs.** Follow REST principles with proper HTTP methods, status codes, and resource naming conventions.
+
+**Use OpenAPI/Swagger for API documentation.** Apply `patchNestJsSwagger()` to ensure Zod schemas are properly reflected in API documentation.
+
+**Implement proper versioning strategies.** Use URL versioning or header-based versioning for API evolution without breaking clients.
+
+**Apply consistent response formats.** Use interceptors to ensure uniform response structure across all endpoints.
