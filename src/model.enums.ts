@@ -1,0 +1,173 @@
+// Auto-generated from Prisma schema
+// Do not edit manually — update schema.prisma and rerun cursor script
+
+export enum AsyncJobType {
+  GENERATE_ACCOUNT_WEEKLY_INSIGHTS = 'GENERATE_ACCOUNT_WEEKLY_INSIGHTS',
+  GENERATE_PROMPT_SUGGESTIONS = 'GENERATE_PROMPT_SUGGESTIONS',
+  GENERATE_PROMPT_INTENTIONS = 'GENERATE_PROMPT_INTENTIONS',
+  GENERATE_TOPICS_VOLUMES = 'GENERATE_TOPICS_VOLUMES',
+  GENERATE_PROMPT_VOLUMES = 'GENERATE_PROMPT_VOLUMES',
+  GENERATE_POSTS = 'GENERATE_POSTS',
+  GENERATE_TOPICS = 'GENERATE_TOPICS',
+  MERGE_ENTITIES = 'MERGE_ENTITIES',
+  GENERATE_ONBOARDING_INFO = 'GENERATE_ONBOARDING_INFO',
+  GET_COMPETITOR_SITE_URL = 'GET_COMPETITOR_SITE_URL',
+  GENERATE_PROMPT_RECOMMENDATIONS = 'GENERATE_PROMPT_RECOMMENDATIONS',
+  MERGE_CANDIDATE = 'MERGE_CANDIDATE',
+}
+
+export enum AsyncJobStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
+export enum FeatureRequestStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
+export enum UrgencyLevel {
+  LOW = 'LOW',
+  MID = 'MID',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL',
+}
+
+export enum AccountStatus {
+  IN_PROGRESS = 'IN_PROGRESS',
+  INITIAL = 'INITIAL',
+  ACTIVE = 'ACTIVE',
+  SUSPENDED = 'SUSPENDED',
+  CANCELLED = 'CANCELLED',
+  DELETED = 'DELETED',
+  FAILED_ONBOARDING = 'FAILED_ONBOARDING',
+}
+
+export enum AccountSubscriptionStatus {
+  ACTIVE = 'active',
+  TRIALING = 'trialing',
+  PAST_DUE = 'past_due',
+  INCOMPLETE = 'incomplete',
+  INCOMPLETE_EXPIRED = 'incomplete_expired',
+  CANCELLED = 'canceled',
+  UNPAID = 'unpaid',
+}
+export enum PromptResponseStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
+export enum Provider {
+  GEMINI = 'GEMINI',
+  OPENAI = 'OPENAI',
+  ANTHROPIC = 'ANTHROPIC',
+  PERPLEXITY = 'PERPLEXITY',
+  GROK = 'GROK',
+  BD_GOOGLE_AI_MODE = 'BD_GOOGLE_AI_MODE',
+  BD_COPILOT = 'BD_COPILOT',
+}
+
+export enum PromptType {
+  COMMERCIAL = 'COMMERCIAL',
+  INFORMATIONAL = 'INFORMATIONAL',
+  NAVIGATIONAL = 'NAVIGATIONAL',
+  TRANSACTIONAL = 'TRANSACTIONAL',
+}
+
+export enum PromptIntentType {
+  ORGANIC = 'ORGANIC',
+  BRANDED = 'BRANDED',
+  COMPETITOR_COMPARISON = 'COMPETITOR_COMPARISON',
+}
+
+export enum TaskStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  TIMEOUT = 'TIMEOUT',
+  IN_RECOVERY = 'IN_RECOVERY',
+}
+
+export enum RunStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  TIMEOUT = 'TIMEOUT',
+}
+
+export enum UserRole {
+  OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
+  MEMBER = 'MEMBER',
+}
+
+export enum RecommendationType {
+  CONTENT = 'CONTENT',
+  BLOG = 'BLOG',
+  TECHNICAL = 'TECHNICAL',
+  PR = 'PR',
+  THIRD_PARTY = 'THIRD_PARTY',
+}
+
+export enum ImpactLevels {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+}
+
+export enum TopicState {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SUGGESTED = 'SUGGESTED',
+  DELETED = 'DELETED',
+}
+
+export enum PromptState {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SUGGESTED = 'SUGGESTED',
+  DELETED = 'DELETED',
+}
+
+export enum PostState {
+  SUGGESTED = 'SUGGESTED',
+  TO_BE_PUBLISHED = 'TO_BE_PUBLISHED',
+  SCHEDULED = 'SCHEDULED',
+  POSTED = 'POSTED',
+  CANCELED = 'CANCELED',
+  FAILED = 'FAILED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DELETED = 'DELETED',
+}
+
+export enum SocialMediaProvider {
+  X = 'X',
+  LINKEDIN = 'LINKEDIN',
+  FACEBOOK = 'FACEBOOK',
+  INSTAGRAM = 'INSTAGRAM',
+  TIKTOK = 'TIKTOK',
+  GSC = 'GSC',
+  REDDIT = 'REDDIT',
+  PINTEREST = 'PINTEREST',
+  BLOG = 'BLOG',
+  LISTICLE = 'LISTICLE',
+}
+
+export enum CompetitorStatus {
+  ACTIVE = 'ACTIVE',
+  ONBOARDING = 'ONBOARDING',
+}
+
+export enum RecommendationStatus {
+  TO_DO = 'TO_DO',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DONE = 'DONE',
+}

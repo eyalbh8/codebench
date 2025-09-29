@@ -1,0 +1,299 @@
+service: core-api
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${opt:stage, 'dev'}
+  region: eu-central-1
+  environment:
+    NODE_ENV: ${self:provider.stage}
+    DATABASE_URL: ${env:DATABASE_URL}
+    BUILD_DATABASE_URL: ${env:BUILD_DATABASE_URL}
+    LAMBDA_URL: ${env:LAMBDA_URL}
+    STRIPE_SECRET_KEY: ${env:STRIPE_SECRET_KEY}
+    STRIPE_PUBLISHABLE_KEY: ${env:STRIPE_PUBLISHABLE_KEY}
+    STRIPE_WEBHOOK_SECRET: ${env:STRIPE_WEBHOOK_SECRET}
+    AGENCY_ACCESS_TOKEN: ${env:AGENCY_ACCESS_TOKEN}
+    SCAN_PERIOD: ${env:SCAN_PERIOD}
+    SITE_URL: ${env:SITE_URL}
+    S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
+    S3_BUCKET_IGEO_PUBLIC_RESOURCES: ${env:S3_BUCKET_IGEO_PUBLIC_RESOURCES}
+    DESCOPE_BASE_URL: ${env:DESCOPE_BASE_URL}
+    DESCOPE_PROJECT_ID: ${env:DESCOPE_PROJECT_ID}
+    DESCOPE_MANAGEMENT_KEY: ${env:DESCOPE_MANAGEMENT_KEY}
+    PROVIDER_VISIBILITY_THRESHOLD: ${env:PROVIDER_VISIBILITY_THRESHOLD}
+    DEFAULT_ACCOUNT_SETTINGS_PROVIDERS: PERPLEXITY,GEMINI,OPENAI
+    DEFAULT_ACCOUNT_SETTINGS_REGIONS: us
+    SYSTEM_ADMIN_ROLE_NAME: ${env:SYSTEM_ADMIN_ROLE_NAME}
+    TENANT_ADMIN_ROLE: ${env:TENANT_ADMIN_ROLE}
+    MACHINE_ROLE_NAME: ${env:MACHINE_ROLE_NAME}
+    GEMINI_API_KEY: ${env:GEMINI_API_KEY}
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY}
+    OPENAI_MODEL: ${env:OPENAI_MODEL}
+    AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
+    CX_DOMAIN: ${env:CX_DOMAIN}
+    CX_API_KEY: ${env:CX_API_KEY}
+    CX_REPORTING_STRATEGY: REPORT_AFTER_INVOCATION
+    CX_PLATFORM_LOGS: disabled
+    MAX_SUGGESTED_TOPICS: ${env:MAX_SUGGESTED_TOPICS}
+    MAX_PROMPT_SUGGESTIONS: ${env:MAX_PROMPT_SUGGESTIONS}
+    LINKEDIN_CLIENT_ID: ${env:LINKEDIN_CLIENT_ID}
+    LINKEDIN_CLIENT_SECRET: ${env:LINKEDIN_CLIENT_SECRET}
+    LINKEDIN_POSTS_GENERATION_COUNT: ${env:LINKEDIN_POSTS_GENERATION_COUNT, '2'}
+    LINKEDIN_POSTS_LIMIT: ${env:LINKEDIN_POSTS_LIMIT, '10'}
+    X_POSTS_GENERATION_COUNT: ${env:X_POSTS_GENERATION_COUNT, '2'}
+    X_POSTS_LIMIT: ${env:X_POSTS_LIMIT, '10'}
+    FACEBOOK_POSTS_GENERATION_COUNT: ${env:FACEBOOK_POSTS_GENERATION_COUNT, '2'}
+    FACEBOOK_POSTS_LIMIT: ${env:FACEBOOK_POSTS_LIMIT, '10'}
+    PINTEREST_CLIENT_ID: ${env:PINTEREST_CLIENT_ID}
+    PINTEREST_CLIENT_SECRET: ${env:PINTEREST_CLIENT_SECRET}
+    PINTEREST_SANDBOX_SECRET: ${env:PINTEREST_SANDBOX_SECRET}
+    PINTEREST_POSTS_GENERATION_COUNT: ${env:PINTEREST_POSTS_GENERATION_COUNT, '2'}
+    PINTEREST_POSTS_LIMIT: ${env:PINTEREST_POSTS_LIMIT, '10'}
+    REDDIT_POSTS_GENERATION_COUNT: ${env:REDDIT_POSTS_GENERATION_COUNT, '2'}
+    REDDIT_POSTS_LIMIT: ${env:REDDIT_POSTS_LIMIT, '10'}
+    REDDIT_CLIENT_ID: ${env:REDDIT_CLIENT_ID}
+    REDDIT_CLIENT_SECRET: ${env:REDDIT_CLIENT_SECRET}
+    REDDIT_REDIRECT_URI: ${env:REDDIT_REDIRECT_URI}
+    REDDIT_USER_AGENT: ${env:REDDIT_USER_AGENT}
+    BLOG_POSTS_GENERATION_COUNT: ${env:BLOG_POSTS_GENERATION_COUNT, '1'}
+    BLOG_POSTS_LIMIT: ${env:BLOG_POSTS_LIMIT, '10'}
+    INSTAGRAM_POSTS_GENERATION_COUNT: ${env:INSTAGRAM_POSTS_GENERATION_COUNT, '2'}
+    INSTAGRAM_POSTS_LIMIT: ${env:INSTAGRAM_POSTS_LIMIT, '10'}
+    LISTICLE_POSTS_GENERATION_COUNT: ${env:LISTICLE_POSTS_GENERATION_COUNT, '1'}
+    LISTICLE_POSTS_LIMIT: ${env:LISTICLE_POSTS_LIMIT, '10'}
+    FACEBOOK_APP_ID: ${env:FACEBOOK_APP_ID}
+    FACEBOOK_APP_SECRET: ${env:FACEBOOK_APP_SECRET}
+    X_CLIENT_ID: ${env:X_CLIENT_ID}
+    X_CLIENT_SECRET: ${env:X_CLIENT_SECRET}
+    BREVO_API_KEY: ${env:BREVO_API_KEY}
+    EMAIL_FROM: ${env:EMAIL_FROM}
+    EMAIL_FROM_NAME: ${env:EMAIL_FROM_NAME}
+    AWS_LAMBDA_NODEJS_DISABLE_CALLBACK_WARNING: 1
+    TELEGRAM_ACCESS_TOKEN: ${env:TELEGRAM_ACCESS_TOKEN}
+    TELEGRAM_CHAT_ID: ${env:TELEGRAM_CHAT_ID}
+    BRIGHTDATA_SQS_QUEUE_URL: !Ref BrightDataQueue
+    UNSPLASH_ACCESS_KEY: ${env:UNSPLASH_ACCESS_KEY}
+    MAX_INTERVAL_BETWEEN_SCANS: ${env:MAX_INTERVAL_BETWEEN_SCANS}
+    QDRANT_URL: ${env:QDRANT_URL}
+    QDRANT_COLLECTION_NAME: ${env:QDRANT_COLLECTION_NAME}
+  vpc:
+    securityGroupIds:
+      - sg-034e4bb6427583e91
+    subnetIds:
+      - subnet-0f5a2efcb9f6f3e33
+      - subnet-0de6b8f695c9c948d
+      - subnet-0ba7b9d0dcf6d64df
+
+  ecr:
+    images:
+      appimage:
+        path: ./
+        file: dockerfile
+        platform: linux/amd64
+        provenance: false
+        buildArgs:
+          DATABASE_URL: ${env:BUILD_DATABASE_URL}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - rds:*
+          Resource: '*'
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource: '*'
+        - Effect: Allow
+          Action:
+            - ecr:GetAuthorizationToken
+            - ecr:BatchCheckLayerAvailability
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+          Resource: '*'
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource:
+            - 'arn:aws:lambda:eu-central-1:635842976991:function:${self:provider.stage}-create-post'
+            - 'arn:aws:lambda:eu-central-1:635842976991:function:${self:provider.stage}-generate-account-data'
+package:
+  individually: true
+  patterns:
+    - '!node_modules/**'
+    - '!.webpack/**'
+    - '!.serverless/**'
+    - '!.build/**'
+    - '!tests/**'
+    - '!coverage/**'
+    - '!.env*'
+    - '!.git/**'
+    - '!README.md'
+
+functions:
+  api:
+    name: ${self:service}-${self:provider.stage}-api
+    image:
+      name: appimage
+      command:
+        - dist/src/lambda.handler
+    timeout: 29
+    memorySize: 4096
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+    environment:
+      NODE_ENV: ${self:provider.stage}
+
+  createPost:
+    name: ${self:provider.stage}-create-post
+    image:
+      name: appimage
+      command:
+        - dist/src/lambdas/create-post-lambda.handler
+    timeout: 900
+    memorySize: 2048
+    environment:
+      CX_REPORTING_STRATEGY: REPORT_DURING_AND_AFTER_INVOCATION
+
+  brightdataResultConsumer:
+    name: ${self:provider.stage}-brightdata-consumer
+    image:
+      name: appimage
+      command:
+        - dist/src/lambdas/brightdata-consumer.handler
+    memorySize: 1024
+    timeout: 600
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt: [BrightDataQueue, Arn]
+          batchSize: 10
+          maximumBatchingWindow: 15
+          enabled: true
+    environment:
+      CX_REPORTING_STRATEGY: REPORT_DURING_AND_AFTER_INVOCATION
+
+  victorIngestionTrigger:
+    name: ${self:provider.stage}-victor-ingestion-trigger
+    image:
+      name: appimage
+      command:
+        - dist/src/lambdas/victor-ingestion-trigger.handler
+    memorySize: 2048
+    timeout: 900
+    environment:
+      CX_REPORTING_STRATEGY: REPORT_DURING_AND_AFTER_INVOCATION
+
+  generateAccountData:
+    name: ${self:provider.stage}-generate-account-data
+    provisionedConcurrency: ${env:PROVISIONED_CONCURRENCY, '0'}
+    image:
+      name: appimage
+      command:
+        - dist/src/lambdas/generate-account-data.handler
+    timeout: 900
+    memorySize: 2048
+    environment:
+      CX_REPORTING_STRATEGY: REPORT_DURING_AND_AFTER_INVOCATION
+
+  generateWeeklyInsights:
+    name: ${self:provider.stage}-generate-weekly-insights
+    image:
+      name: appimage
+      command:
+        - dist/src/lambdas/generate-weekly-insights-lambda.handler
+    timeout: 900
+    memorySize: 2048
+    events:
+      - schedule:
+          rate: cron(0 20 ? * SUN *)
+          enabled: ${self:custom.weeklyInsightsScheduleEnabled.${self:provider.stage}, false}
+    environment:
+      CX_REPORTING_STRATEGY: REPORT_DURING_AND_AFTER_INVOCATION
+
+resources:
+  Resources:
+    BrightDataQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: brightdata-results-queue-${self:provider.stage}
+        VisibilityTimeout: 610
+
+    BrightDataQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - Ref: BrightDataQueue
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: s3.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: !GetAtt BrightDataQueue.Arn
+              Condition:
+                ArnLike:
+                  aws:SourceArn: arn:aws:s3:::brightdata-results-igeo-${self:provider.stage}
+
+    S3BucketNotification:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: brightdata-results-igeo-${self:provider.stage}
+        NotificationConfiguration:
+          QueueConfigurations:
+            - Event: s3:ObjectCreated:*
+              Queue: !GetAtt BrightDataQueue.Arn
+plugins:
+  - serverless-domain-manager
+  - serverless-offline
+
+custom:
+  weeklyInsightsScheduleEnabled:
+    prod: true
+    dev: false
+
+  # Per-stage toggle
+  domainEnabled:
+    prod: true
+    dev: true
+
+  # Per-stage domain names (empty for dev so resolution never fails)
+  domains:
+    prod: api.igeo.ai
+    dev: devapi.igeo.ai
+
+  # Helper to resolve a domain for the current stage (falls back to empty)
+  stageDomainName: ${self:custom.domains.${self:provider.stage}, ''}
+
+  customDomain:
+    enabled: ${self:custom.domainEnabled.${self:provider.stage}, false}
+    domainName: ${self:custom.stageDomainName}
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: false # Cloudflare handles DNS
+    endpointType: regional
+    securityPolicy: tls_1_2
+    apiType: rest
+
+  # Serverless Offline configuration
+  serverless-offline:
+    httpPort: 3000
+    lambdaPort: 3002
+    websocketPort: 3001
+    host: localhost
+    prefix: dev
+    noPrependStageInUrl: false
+    noTimeout: true
+    useDocker: false
+    useInProcess: true
+    reloadHandler: true
