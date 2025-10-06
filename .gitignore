@@ -1,4 +1,4 @@
 node_modules
 .env
 .env.dev.local
-.env.prod.local
+.env.prod.local.serverless/
